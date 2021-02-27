@@ -1,0 +1,200 @@
+import tensorflow as tf 
+import cv2
+import os
+import matplotlib.pyplot as plt
+import numpy as np
+
+Datadirectory =  "C:/Users/MrLaptop/Desktop/Eye DataSet/Training Data"
+Classes = ["Closed Eyes","Opened Eyes"]
+for category in Classes:
+    path = os.path.join(Datadirectory,category)
+    for img in os.listdir(path):
+        image_array = cv2.imread(os.path.join(path,img),cv2.IMREAD_GRAYSCALE)
+        backtorgb = cv2.cvtColor(image_array,cv2.COLOR_GRAY2RGB)
+        plt.imshow(image_array,cmap = "gray")
+        plt.show()
+        break
+    break
+
+
+training_data = []
+image_size = 224
+
+def create_training_data():
+    for category in Classes:
+        path = os.path.join(Datadirectory,category)
+        Class_number = Classes.index(category) #0,1
+        for img in os.listdir(path):
+            try:
+                image_array = cv2.imread(os.path.join(path,img),cv2.IMREAD_GRAYSCALE)
+                backtorgb = cv2.cvtColor(image_array,cv2.COLOR_GRAY2RGB)
+                new_array = cv2.resize(backtorgb,(image_size,image_size))
+                training_data.append([new_array,Class_number])
+            except Exception as e:
+                pass
+create_training_data()
+print(len(training_data))
+
+import random   # to avoid overfitting
+random.shuffle(training_data)
+
+X = []
+y = []
+for features,label in training_data:
+    X.append(features)
+    y.append(label)
+    
+X = np.array(X).reshape(-1,image_size,image_size,3) #converting into rgb
+X.shape
+
+X = X/255.0
+
+Y = np.array(y)
+
+import pickle
+pickle_out = open("x.pickle","wb")
+pickle.dump(X,pickle_out)
+pickle_out.close()
+
+pickle_out = open("Y.pickle","wb")
+pickle.dump(y,pickle_out)
+pickle_out.close()
+
+import pickle
+pickle_in = open('x.pickle','rb')
+X = pickle.load(pickle_in)
+
+pickle_in = open('Y.pickle','rb')
+y = pickle.load(pickle_in)
+from tensorflow.keras import layers
+model = tf.keras.applications.mobilenet.MobileNet()
+model.summary()
+new_model.compile(loss = "binary_crossentropy",optimizer = "adam",metrics = ["accuracy"])
+new_model.fit(X,Y, epochs = 1,validation_split =0.1)  #training
+new_model.save('C:/Users/MrLaptop/Desktop/7th Semester/Artificial Intelligence/AI_Project/my_model_drowsiness.h5')
+from tensorflow import keras
+new_model = tf.keras.models.load_model('C:/Users/MrLaptop/Desktop/7th Semester/Artificial Intelligence/AI_Project/my_model.h5')
+image_array = cv2.imread("C:/Users/MrLaptop/Desktop/Eye DataSet/Testing Data/s0012_07322_0_0_1_0_1_01.png",cv2.IMREAD_GRAYSCALE)
+backtorgb = cv2.cvtColor(image_array,cv2.COLOR_GRAY2RGB)
+new_array = cv2.resize(backtorgb,(image_size,image_size))
+X_input = np.array(new_array).reshape(1,image_size,image_size,3)
+X_input.shape
+plt.imshow(new_array)
+X_input = X_input/255.0
+prediction = new_model.predict(X_input)
+prediction
+image = cv2.imread("C:/Users/MrLaptop/Desktop/7th Semester/Artificial Intelligence/AI_Project/Women.jpg")
+plt.imshow(cv2.cvtColor(image,cv2.COLOR_BGR2RGB))
+faceCascade = cv2.CascadeClassifier(cv2.data.haarcascades +'haarcascade_frontalface_default.xml')
+eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades +'haarcascade_eye.xml')
+gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+eyes = eye_cascade.detectMultiScale(gray,1.1,4)
+for (x,y,w,h) in eyes:
+    cv2.rectangle(image,(x,y),(x+w,y+h),(0,255,0),2)
+    
+plt.imshow(cv2.cvtColor(image,cv2.COLOR_BGR2RGB))
+eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades +'haarcascade_eye.xml')
+gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+eyes = eye_cascade.detectMultiScale(gray,1.1,4)
+for x,y,w,h in eyes:
+    roi_gray = gray[y:y+h,x:x+w]
+    roi_color = image[y:y+h,x:x+w]
+    eyess = eye_cascade.detectMultiScale(roi_gray)
+    if len(eyess) == 0:
+        print('The eyes are not detected')
+    else:
+        for (ex,ey,ew,eh) in eyess:
+            eyes_roi = roi_color[ey:ey + eh, ex:ex + ew]
+
+
+plt.imshow(cv2.cvtColor(eyes_roi,cv2.COLOR_BGR2RGB))
+eyes_roi.shape
+new_model.predict(final_image)
+import cv2
+import numpy as np
+import winsound
+frequency = 2500 #setting the frquency to 2500 hertz
+duration = 1000  #setting the duration to 1000ms which is equivalent to 1 sec
+path = "haarcascade_frontalface_default.xml"
+faceCascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+cap = cv2.VideoCapture(0)
+#checking if the webcam is opened correctly
+if not cap.isOpened():
+    cap = cv2.VideoCapture(1)
+if not cap.isOpened():
+    raise IOError("Cannot open the webcam")
+    
+counter = 0
+
+while True:
+    ret,frame = cap.read()
+    eyes_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
+    gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+    eyes = eyes_cascade.detectMultiScale(gray,1.1,4)
+    for x,y,w,h in eyes:
+        roi_gray = gray[y:y+h,x:x+w]
+        roi_color = frame[y:y+h,x:x+w]
+        cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
+        eyess = eyes_cascade.detectMultiScale(roi_gray)
+        if len(eyess) == 0:
+            print('The eyes are not detected')
+        else:
+            for (ex,ey,ew,eh) in eyess:
+                eyes_roi = roi_color[ey:ey + eh, ex:ex + ew]
+                
+   
+    gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+    print(faceCascade.empty())
+    faces = faceCascade.detectMultiScale(gray,1.1,4)
+    
+    #draw a rectangle around the faces
+    for (x,y,w,h) in faces:
+        cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
+        
+    font =cv2.FONT_HERSHEY_SIMPLEX
+    
+    font = cv2.FONT_HERSHEY_SIMPLEX        
+    final_image = cv2.resize(eyes_roi,(224,224))
+    final_image = np.expand_dims(final_image,axis = 0)
+    final_image = final_image/255.0
+    
+    Predictions = new_model.predict(final_image)
+    if(Predictions>0.5):
+        status ="Open Eyes"
+        cv2.putText(frame,status,(150,150),font,3,(0,255,0),2,cv2.LINE_4)
+        x1,y1,w1,h1 = 0,0,175,75
+       
+        #adding the text in it
+        cv2.putText(frame,'Active',(x1 + int(w1/10),y1+int(h1/2)),cv2.FONT_HERSHEY_SIMPLEX,0.7,(0,255,0),2)
+        #drawing the backgroud rectangle
+        cv2.rectangle(frame,(x1,x1),(x1 + w1,y1 + h1),(0,0,0),-1)
+    else:
+        counter = counter +1
+        status = "Closed Eyes"
+        cv2.putText(frame,status,(150,150),font,3,(0,255,0),2,cv2.LINE_4)
+        #drawing the backgroud rectangle
+        cv2.rectangle(frame,(x,y),(x + w,y + h),(0,0,255),2)
+        if counter>5:
+            x1,y1,w1,h1  =0,0,175,75
+            cv2.rectangle(frame,(x1,x1),(x1+w1,y1+h1),(0,0,0),2)
+            #adding the text in it
+            cv2.putText(frame,'Sleep Alert',(x1 + int(w1/10),y1+int(h1/2)),cv2.FONT_HERSHEY_SIMPLEX,0.7,(0,255,0),2)
+            winsound.Beep(frequency,duration)
+            counter = 0
+        
+        
+        
+        
+        
+        
+
+    cv2.imshow('Drowsiness detection',frame)
+    if cv2.waitKey(2) &0xFF == ord('q'):
+        break
+    
+    
+cap.release()
+cv2.destroyAllWindows()
+    
+    
